@@ -1,4 +1,4 @@
-package com.hadiai.spring.datajpa;
+package com.hadiai;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

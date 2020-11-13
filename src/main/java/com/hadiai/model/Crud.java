@@ -1,4 +1,4 @@
-package com.hadiai.spring.datajpa.model;
+package com.hadiai.model;
 
 import javax.persistence.*;
 

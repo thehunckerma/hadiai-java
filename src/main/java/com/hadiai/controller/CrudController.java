@@ -1,4 +1,4 @@
-package com.hadiai.spring.datajpa.controller;
+package com.hadiai.controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.hadiai.spring.datajpa.model.Crud;
-import com.hadiai.spring.datajpa.repository.CrudRepository;
+import com.hadiai.model.Crud;
+import com.hadiai.repository.CrudRepository;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 public class CrudController {
@@ -61,6 +62,7 @@ public class CrudController {
 	}
 
 	@PostMapping("/cruds")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<Crud> createCrud(@RequestBody Crud crud) {
 		try {
 			Crud _crud = crudRepository.save(new Crud(crud.getName(), crud.getDescription(), false));
@@ -71,6 +73,7 @@ public class CrudController {
 	}
 
 	@PutMapping("/cruds/{id}")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<Crud> updateCrud(@PathVariable("id") long id, @RequestBody Crud crud) {
 		Optional<Crud> crudData = crudRepository.findById(id);
 
@@ -86,6 +89,7 @@ public class CrudController {
 	}
 
 	@DeleteMapping("/cruds/{id}")
+	@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<HttpStatus> deleteCrud(@PathVariable("id") long id) {
 		try {
 			crudRepository.deleteById(id);
@@ -96,6 +100,7 @@ public class CrudController {
 	}
 
 	@DeleteMapping("/cruds")
+	@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<HttpStatus> deleteAllCruds() {
 		try {
 			crudRepository.deleteAll();
@@ -103,7 +108,6 @@ public class CrudController {
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
 	}
 
 	@GetMapping("/cruds/published")
