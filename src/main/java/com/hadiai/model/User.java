@@ -19,9 +19,8 @@ public class User {
     @NotBlank
     @Size(max = 20)
     private String username;
-    @OneToOne(mappedBy = "group", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
-
+    
+    
     @NotBlank
     @Size(max = 50)
     @Email
