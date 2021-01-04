@@ -2,18 +2,33 @@ package com.hadiai.security.jwt;
 
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.StringUtils;
 
 import com.hadiai.security.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
 
+import com.hadiai.model.User;
+import com.hadiai.repository.UserRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
+    @Autowired
+    UserRepository userRepository;
+    
+    @Autowired
+    HttpServletRequest _request;
 
     @Value("${hadiai.app.jwtSecret}")
     private String jwtSecret;
@@ -51,5 +66,27 @@ public class JwtUtils {
         }
 
         return false;
+    }
+
+    public User getUserFromJWT() {
+        String token = parseJwt(_request);
+        if(validateJwtToken(token)){
+            String username = getUserNameFromJwtToken(token);
+            User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+            return user;
+        } else {
+            return null;
+        }
+    }
+
+    public String parseJwt(HttpServletRequest request) {
+        String headerAuth = request.getHeader("Authorization");
+
+        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7, headerAuth.length());
+        }
+
+        return null;
     }
 }
