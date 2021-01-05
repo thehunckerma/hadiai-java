@@ -1,7 +1,6 @@
 package com.hadiai.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +15,8 @@ import com.hadiai.model.Section;
 @Entity
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email") })
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+@JsonIgnoreProperties(value = { "password" })
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,8 +46,12 @@ public class User {
             CascadeType.MERGE
         },
         mappedBy = "students")
-    Set<Section> sections = new HashSet<>();;
+    private Set<Section> sections = new HashSet<>();
 
+    @OneToMany(mappedBy="teacher")
+    @JsonBackReference
+    private Set<Section> teacherSections = new HashSet<>();
+    
     public User() {
     }
 
@@ -103,5 +107,13 @@ public class User {
 
     public void setSections(Set<Section> sections) {
         this.sections = sections;
+    }    
+    
+    public Set<Section> getTeacherSections() {
+        return teacherSections;
+    }
+
+    public void setTeacherSections(Set<Section> teacherSections) {
+        this.teacherSections = teacherSections;
     }
 }

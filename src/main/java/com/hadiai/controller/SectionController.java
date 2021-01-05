@@ -42,6 +42,7 @@ public class SectionController {
 	
     private static final Logger logger = LoggerFactory.getLogger(SectionController.class);
 
+	// ========================= DONE ===============================
 	@GetMapping("/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<List<Section>> getAllSections(@RequestParam(required = false) String name) {
@@ -63,6 +64,7 @@ public class SectionController {
 		}
 	}
 
+	// ========================= DONE ===============================
 	@GetMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> getSectionById(@PathVariable("id") long id) {
@@ -75,20 +77,14 @@ public class SectionController {
 		}
 	}
 
+	// ========================= DONE ===============================
 	@PostMapping("/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> createSection(@RequestBody Section section) {
 		try {
 			User user = jwtUtils.getUserFromJWT();
-			// Set<User> users = new HashSet<User>(){{
-			// 	add(user);
-			// }};
-			// logger.info("Users : " + users);
-			Section _section = new Section(section.getName(), "");
-			_section.getStudents().add(user);
-			Section s = sectionRepository.save(_section);
-
-			return new ResponseEntity<>(s, HttpStatus.CREATED);
+			Section _section = sectionRepository.save(new Section(section.getName(), "", user));
+			return new ResponseEntity<>(_section, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

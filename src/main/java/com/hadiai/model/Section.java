@@ -1,7 +1,6 @@
 package com.hadiai.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,8 +14,8 @@ import java.util.Random;
 import com.hadiai.model.User;
 
 @Entity
-@Table(name = "sections")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+@Table(name = "sections", uniqueConstraints = { @UniqueConstraint(columnNames = "token") })
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class Section {
 
     @Id
@@ -41,18 +40,18 @@ public class Section {
         inverseJoinColumns = { @JoinColumn(name = "section_id") })
     private Set<User> students = new HashSet<>();
 
+    @ManyToOne
+    @JsonManagedReference
+    @JoinColumn(name="teacher_id", nullable=false)
+    private User teacher;
+
     public Section() {
     }
-
-    public Section(String name, String token) {
-        this.name = name;
-        this.token = generateToken();
-    }    
     
-    public Section(String name, String token, Set<User> students) {
+    public Section(String name, String token, User teacher) {
         this.name = name;
         this.token = generateToken();
-        this.students = students;
+        this.teacher = teacher;
     }
 
     public Long getId() {
@@ -85,13 +84,21 @@ public class Section {
 
     public void setStudents(Set<User> students) {
         this.students = students;
+    }    
+    
+    public User getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(User teacher) {
+        this.teacher = teacher;
     }
 
     private String generateToken(){
         Random rand = new Random();
         char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toCharArray();
         String token = String.valueOf(rand.nextInt(10));
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 9; i++) {
         	token = token + alphabet[rand.nextInt(26)];
         	token = token + String.valueOf(rand.nextInt(10));
         }
