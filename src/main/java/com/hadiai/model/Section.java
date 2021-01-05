@@ -1,5 +1,8 @@
 package com.hadiai.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,8 +15,9 @@ import java.util.Random;
 import com.hadiai.model.User;
 
 @Entity
-@Table(name = "_groups")
-public class Group {
+@Table(name = "sections")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+public class Section {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,20 +32,27 @@ public class Group {
     private String token;
 
     @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST,
-                CascadeType.MERGE
-            },
-            mappedBy = "groups")
-    private Set<User> users = new HashSet<>();
+        cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+        })
+    @JoinTable(name = "sections_students",
+        joinColumns = { @JoinColumn(name = "user_id") },
+        inverseJoinColumns = { @JoinColumn(name = "section_id") })
+    private Set<User> students = new HashSet<>();
 
-    public Group() {
+    public Section() {
     }
 
-    public Group(String name, String token, Set<User> users) {
+    public Section(String name, String token) {
         this.name = name;
         this.token = generateToken();
-        this.users = users;
+    }    
+    
+    public Section(String name, String token, Set<User> students) {
+        this.name = name;
+        this.token = generateToken();
+        this.students = students;
     }
 
     public Long getId() {
@@ -68,12 +79,12 @@ public class Group {
         this.token = generateToken();
     }    
     
-    public Set<User> getUsers() {
-        return users;
+    public Set<User> getStudents() {
+        return students;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users = users;
+    public void setStudents(Set<User> students) {
+        this.students = students;
     }
 
     private String generateToken(){

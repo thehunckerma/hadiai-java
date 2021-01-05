@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.hadiai.model.Group;
+import com.hadiai.model.Section;
 import com.hadiai.model.User;
-import com.hadiai.repository.GroupRepository;
+import com.hadiai.repository.SectionRepository;
 import com.hadiai.security.jwt.JwtUtils;
 
 import org.slf4j.Logger;
@@ -32,84 +32,87 @@ import org.slf4j.LoggerFactory;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
-public class GroupController {
+public class SectionController {
 
 	@Autowired
-	GroupRepository groupRepository;
+	SectionRepository sectionRepository;
 
     @Autowired
 	JwtUtils jwtUtils;
 	
-    private static final Logger logger = LoggerFactory.getLogger(GroupController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionController.class);
 
-	@GetMapping("/groups")
+	@GetMapping("/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
-	public ResponseEntity<List<Group>> getAllGroups(@RequestParam(required = false) String name) {
+	public ResponseEntity<List<Section>> getAllSections(@RequestParam(required = false) String name) {
 		try {
-			List<Group> groups = new ArrayList<Group>();
+			List<Section> sections = new ArrayList<Section>();
 
 			if (name == null)
-				groupRepository.findAll().forEach(groups::add);
+				sectionRepository.findAll().forEach(sections::add);
 			else
-				groupRepository.findByNameContaining(name).forEach(groups::add);
+				sectionRepository.findByNameContaining(name).forEach(sections::add);
 
-			if (groups.isEmpty()) {
+			if (sections.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 
-			return new ResponseEntity<>(groups, HttpStatus.OK);
+			return new ResponseEntity<>(sections, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@GetMapping("/groups/{id}")
+	@GetMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
-	public ResponseEntity<Group> getGroupById(@PathVariable("id") long id) {
-		Optional<Group> groupData = groupRepository.findById(id);
+	public ResponseEntity<Section> getSectionById(@PathVariable("id") long id) {
+		Optional<Section> sectionData = sectionRepository.findById(id);
 
-		if (groupData.isPresent()) {
-			return new ResponseEntity<>(groupData.get(), HttpStatus.OK);
+		if (sectionData.isPresent()) {
+			return new ResponseEntity<>(sectionData.get(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
-	@PostMapping("/groups")
+	@PostMapping("/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
-	public ResponseEntity<Group> createGroup(@RequestBody Group group) {
+	public ResponseEntity<Section> createSection(@RequestBody Section section) {
 		try {
 			User user = jwtUtils.getUserFromJWT();
-			Set<User> users = new HashSet<User>(){{
-				add(user);
-			}};
-			logger.info("Users : " + users);
-			Group _group = groupRepository.save(new Group(group.getName(), "", users));
-			return new ResponseEntity<>(_group, HttpStatus.CREATED);
+			// Set<User> users = new HashSet<User>(){{
+			// 	add(user);
+			// }};
+			// logger.info("Users : " + users);
+			Section _section = new Section(section.getName(), "");
+			_section.getStudents().add(user);
+			Section s = sectionRepository.save(_section);
+
+			return new ResponseEntity<>(s, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@PutMapping("/groups/{id}")
+	@PutMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
-	public ResponseEntity<Group> updateGroup(@PathVariable("id") long id, @RequestBody Group group) {
-		Optional<Group> groupData = groupRepository.findById(id);
+	public ResponseEntity<Section> updateSection(@PathVariable("id") long id, @RequestBody Section section) {
+		Optional<Section> sectionData = sectionRepository.findById(id);
 
-		if (groupData.isPresent()) {
-			Group _group = groupData.get();
-			_group.setName(group.getName());
-			return new ResponseEntity<>(groupRepository.save(_group), HttpStatus.OK);
+		if (sectionData.isPresent()) {
+			Section _section = sectionData.get();
+			_section.setName(section.getName());
+			return new ResponseEntity<>(sectionRepository.save(_section), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
-	@DeleteMapping("/groups/{id}")
+	@DeleteMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
-	public ResponseEntity<HttpStatus> deleteGroup(@PathVariable("id") long id) {
+	public ResponseEntity<HttpStatus> deleteSection(@PathVariable("id") long id) {
 		try {
-			groupRepository.deleteById(id);
+			sectionRepository.deleteById(id);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

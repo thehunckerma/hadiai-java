@@ -1,5 +1,8 @@
 package com.hadiai.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,11 +11,12 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import com.hadiai.model.Group;
+import com.hadiai.model.Section;
 
 @Entity
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email") })
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,14 +41,12 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST,
-                CascadeType.MERGE
-            })
-    @JoinTable(name = "users_groups",
-        joinColumns = { @JoinColumn(name = "user_id") },
-        inverseJoinColumns = { @JoinColumn(name = "group_id") })
-    Set<Group> groups = new HashSet<>();;
+        cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+        },
+        mappedBy = "students")
+    Set<Section> sections = new HashSet<>();;
 
     public User() {
     }
@@ -95,11 +97,11 @@ public class User {
         this.roles = roles;
     }
 
-    public Set<Group> getGroups() {
-        return groups;
+    public Set<Section> getSections() {
+        return sections;
     }
 
-    public void setGroups(Set<Group> groups) {
-        this.groups = groups;
+    public void setSections(Set<Section> sections) {
+        this.sections = sections;
     }
 }
