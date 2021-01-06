@@ -18,7 +18,7 @@ Run:
 `mvn install`  
 `mvn spring-boot:run`
 
-A local server will run on localhost:8080  
+A local server will run on localhost:8080
 
 Connect to mysql database and run the following:
 
@@ -28,5 +28,7 @@ INSERT INTO roles(name) VALUES('ROLE_MODERATOR');
 INSERT INTO roles(name) VALUES('ROLE_ADMIN');
 ```
 
-Import the insomnia collection, and start with the signup 
+Import the insomnia collection, and start with the signup
 then login to get the jwt and use it to send requests to protected routes
+
+Use `mvn spotless:check` to check if any files need formatting, and `mvn spotless:apply` to format all files.

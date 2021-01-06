@@ -80,6 +80,14 @@ public class JwtUtils {
 		}
 	}
 
+	public Long getUserIdFromJWT() {
+		User user = getUserFromJWT();
+		if (user == null) {
+			return null;
+		}
+		return user.getId();
+	}
+
 	public String parseJwt(HttpServletRequest request) {
 		String headerAuth = request.getHeader("Authorization");
 
