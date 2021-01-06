@@ -1,119 +1,111 @@
+
 package com.hadiai.model;
 
 import com.fasterxml.jackson.annotation.*;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import com.hadiai.model.Section;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username"),
-        @UniqueConstraint(columnNames = "email") })
-// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+		@UniqueConstraint(columnNames = "email") })
 @JsonIgnoreProperties(value = { "password" })
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @NotBlank
-    @Size(max = 20)
-    private String username;
-    
-    
-    @NotBlank
-    @Size(max = 50)
-    @Email
-    private String email;
+	@NotBlank
+	@Size(max = 20)
+	private String username;
 
-    @NotBlank
-    @Size(max = 120)
-    private String password;
+	@NotBlank
+	@Size(max = 50)
+	@Email
+	private String email;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+	@NotBlank
+	@Size(max = 120)
+	private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY,
-        cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-        },
-        mappedBy = "students")
-    private Set<Section> sections = new HashSet<>();
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(mappedBy="teacher")
-    @JsonBackReference
-    private Set<Section> teacherSections = new HashSet<>();
-    
-    public User() {
-    }
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "students")
+	private Set<Section> sections = new HashSet<>();
 
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
+	@OneToMany(mappedBy = "teacher")
+	@JsonBackReference
+	private Set<Section> teacherSections = new HashSet<>();
 
-    public Long getId() {
-        return id;
-    }
+	public User() {
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public User(String username, String email, String password) {
+		this.username = username;
+		this.email = email;
+		this.password = password;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public String getEmail() {
-        return email;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    public Set<Role> getRoles() {
-        return roles;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public Set<Section> getSections() {
-        return sections;
-    }
+	public Set<Role> getRoles() {
+		return roles;
+	}
 
-    public void setSections(Set<Section> sections) {
-        this.sections = sections;
-    }    
-    
-    public Set<Section> getTeacherSections() {
-        return teacherSections;
-    }
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
 
-    public void setTeacherSections(Set<Section> teacherSections) {
-        this.teacherSections = teacherSections;
-    }
+	public Set<Section> getSections() {
+		return sections;
+	}
+
+	public void setSections(Set<Section> sections) {
+		this.sections = sections;
+	}
+
+	public Set<Section> getTeacherSections() {
+		return teacherSections;
+	}
+
+	public void setTeacherSections(Set<Section> teacherSections) {
+		this.teacherSections = teacherSections;
+	}
 }

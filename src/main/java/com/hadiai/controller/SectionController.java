@@ -1,14 +1,17 @@
+
 package com.hadiai.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.HashSet;
-import java.util.Set;
+import com.hadiai.model.Section;
+import com.hadiai.model.User;
+import com.hadiai.repository.SectionRepository;
+import com.hadiai.security.jwt.JwtUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,15 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.hadiai.model.Section;
-import com.hadiai.model.User;
-import com.hadiai.repository.SectionRepository;
-import com.hadiai.security.jwt.JwtUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -37,10 +35,10 @@ public class SectionController {
 	@Autowired
 	SectionRepository sectionRepository;
 
-    @Autowired
+	@Autowired
 	JwtUtils jwtUtils;
-	
-    private static final Logger logger = LoggerFactory.getLogger(SectionController.class);
+
+	private static final Logger logger = LoggerFactory.getLogger(SectionController.class);
 
 	// ========================= DONE ===============================
 	@GetMapping("/sections")
@@ -49,10 +47,22 @@ public class SectionController {
 		try {
 			List<Section> sections = new ArrayList<Section>();
 
-			if (name == null)
-				sectionRepository.findAll().forEach(sections::add);
-			else
-				sectionRepository.findByNameContaining(name).forEach(sections::add);
+			User user = jwtUtils.getUserFromJWT();
+			Long id;
+
+			if (user == null) {
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			} else {
+				id = user.getId(); // Get current teacher ID to retrieve his sections
+			}
+
+			if (name == null) {
+				// Retrieve all groups created by current teacher
+				sectionRepository.findByTeacher_Id(id).forEach(sections::add);
+			} else {
+				// Retrieve all groups with name (name parameter) and created by current teacher
+				sectionRepository.findByNameContainingAndTeacher_Id(name, id).forEach(sections::add);
+			}
 
 			if (sections.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -78,13 +88,13 @@ public class SectionController {
 	}
 
 	// ========================= DONE ===============================
-	@PostMapping("/sections")
+	@PostMapping(value = "/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> createSection(@RequestBody Section section) {
 		try {
-			User user = jwtUtils.getUserFromJWT();
-			Section _section = sectionRepository.save(new Section(section.getName(), "", user));
-			return new ResponseEntity<>(_section, HttpStatus.CREATED);
+			User user = jwtUtils.getUserFromJWT(); // Get current user (teacher);
+			return new ResponseEntity<>(sectionRepository.save(new Section(section.getName(), user)),
+					HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

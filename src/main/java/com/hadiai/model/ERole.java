@@ -1,3 +1,4 @@
+
 package com.hadiai.model;
 
 public enum ERole {
