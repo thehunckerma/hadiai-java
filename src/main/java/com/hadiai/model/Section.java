@@ -23,6 +23,9 @@ public class Section {
 	@Size(max = 50)
 	private String name;
 
+	@Size(max = 250)
+	private String description;
+
 	@NotBlank
 	@Size(max = 20)
 	private String token;
@@ -40,8 +43,9 @@ public class Section {
 	public Section() {
 	}
 
-	public Section(String name, User teacher) {
+	public Section(String name, String description, User teacher) {
 		this.name = name;
+		this.description = description;
 		this.token = generateToken();
 		this.teacher = teacher;
 	}
@@ -60,6 +64,14 @@ public class Section {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public String getToken() {

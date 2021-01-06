@@ -40,7 +40,6 @@ public class SectionController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SectionController.class);
 
-	// =============================== DONE ===============================
 	@GetMapping("/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<List<Section>> getAllSections(@RequestParam(required = false) String name) {
@@ -72,7 +71,6 @@ public class SectionController {
 		}
 	}
 
-	// =============================== DONE ===============================
 	@GetMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> getSectionById(@PathVariable("id") long id) {
@@ -91,7 +89,6 @@ public class SectionController {
 		}
 	}
 
-	// =============================== DONE ===============================
 	@PostMapping(value = "/sections")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> createSection(@RequestBody Section section) {
@@ -101,16 +98,16 @@ public class SectionController {
 			if (user == null) {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			}
-
-			return new ResponseEntity<>(sectionRepository.save(new Section(section.getName(), user)),
-					HttpStatus.CREATED); // Create section with current user as teacher and save it,
-			// and return a 201 created code with the created section
+			// Create section with current user as teacher and save it, and return a 201
+			// created code with the created section
+			return new ResponseEntity<>(
+					sectionRepository.save(new Section(section.getName(), section.getDescription(), user)),
+					HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	// =============================== DONE ===============================
 	@PutMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> updateSection(@PathVariable("id") long id, @RequestBody Section section) {
@@ -120,19 +117,19 @@ public class SectionController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 
-		Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(id, userId); // Retrieve section by ID
-																								// (/id) and teacher ID
+		// Retrieve section by ID (/id) and teacher ID
+		Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(id, userId);
 
 		if (sectionData.isPresent()) {
 			Section _section = sectionData.get();
 			_section.setName(section.getName()); // Update section's name
+			_section.setDescription(section.getDescription()); // Update section's description
 			return new ResponseEntity<>(sectionRepository.save(_section), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
-	// =============================== DONE ===============================
 	@DeleteMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<HttpStatus> deleteSection(@PathVariable("id") long id) {
