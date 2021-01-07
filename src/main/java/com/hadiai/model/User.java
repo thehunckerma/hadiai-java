@@ -38,11 +38,16 @@ public class User {
 	private Set<Role> roles = new HashSet<>();
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "students")
-	private Set<Section> sections = new HashSet<>();
+	@JsonBackReference // Prevent circular response
+	private Set<Section> studentSections = new HashSet<>(); // student's sections
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "requests")
+	@JsonBackReference // Prevent circular response
+	private Set<Section> requests = new HashSet<>(); // student's sections with pending join request
 
 	@OneToMany(mappedBy = "teacher")
-	@JsonBackReference
-	private Set<Section> teacherSections = new HashSet<>();
+	@JsonBackReference // Prevent circular response
+	private Set<Section> teacherSections = new HashSet<>(); // student's sections
 
 	public User() {
 	}
@@ -93,12 +98,20 @@ public class User {
 		this.roles = roles;
 	}
 
-	public Set<Section> getSections() {
-		return sections;
+	public Set<Section> getStudentSections() {
+		return studentSections;
 	}
 
-	public void setSections(Set<Section> sections) {
-		this.sections = sections;
+	public void setStudentSections(Set<Section> studentSections) {
+		this.studentSections = studentSections;
+	}
+
+	public Set<Section> getRequests() {
+		return requests;
+	}
+
+	public void setRequests(Set<Section> requests) {
+		this.requests = requests;
 	}
 
 	public Set<Section> getTeacherSections() {

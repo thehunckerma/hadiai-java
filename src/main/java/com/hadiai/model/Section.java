@@ -35,6 +35,11 @@ public class Section {
 			@JoinColumn(name = "section_id") })
 	private Set<User> students = new HashSet<>();
 
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "sections_requests", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "section_id") })
+	private Set<User> requests = new HashSet<>();
+
 	@ManyToOne
 	// @JsonManagedReference
 	@JoinColumn(name = "teacher_id", nullable = false)
@@ -96,6 +101,14 @@ public class Section {
 
 	public void setTeacher(User teacher) {
 		this.teacher = teacher;
+	}
+
+	public Set<User> getRequests() {
+		return requests;
+	}
+
+	public void setRequests(Set<User> requests) {
+		this.requests = requests;
 	}
 
 	private String generateToken() {

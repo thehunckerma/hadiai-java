@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -67,6 +68,7 @@ public class SectionController {
 
 			return new ResponseEntity<>(sections, HttpStatus.OK);
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -104,6 +106,7 @@ public class SectionController {
 					sectionRepository.save(new Section(section.getName(), section.getDescription(), user)),
 					HttpStatus.CREATED);
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -151,6 +154,36 @@ public class SectionController {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping(value = "/sections/join/{token}")
+	@PreAuthorize("hasRole('USER')")
+	public ResponseEntity<Section> joinSection(@PathVariable("token") String token) {
+		try {
+			User user = jwtUtils.getUserFromJWT(); // Get current user (student);
+
+			if (user == null) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			} // check if the user exists
+
+			Optional<Section> _sectionData = sectionRepository.findFirstByToken(token); // Find section by token (using
+																						// optional to avoid exceptions)
+
+			if (!_sectionData.isPresent()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			Section sectionData = sectionRepository.getFirstByToken(token); // Find section by token
+
+			Set<User> requests = sectionData.getRequests();
+			requests.add(user);
+			sectionData.setRequests(requests); // Add user to section's requests
+
+			return new ResponseEntity<>(sectionRepository.save(sectionData), HttpStatus.CREATED);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }
