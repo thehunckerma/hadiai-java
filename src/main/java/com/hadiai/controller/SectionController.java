@@ -4,6 +4,7 @@ package com.hadiai.controller;
 import com.hadiai.model.Section;
 import com.hadiai.model.User;
 import com.hadiai.repository.SectionRepository;
+import com.hadiai.repository.UserRepository;
 import com.hadiai.security.jwt.JwtUtils;
 
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class SectionController {
 
 	@Autowired
 	SectionRepository sectionRepository;
+	@Autowired
+	UserRepository userRepository;
 
 	@Autowired
 	JwtUtils jwtUtils;
@@ -157,7 +160,7 @@ public class SectionController {
 		}
 	}
 
-	@GetMapping(value = "/sections/join/{token}")
+	@GetMapping(value = "/sections/join/token/{token}")
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<Section> joinSection(@PathVariable("token") String token) {
 		try {
@@ -167,20 +170,79 @@ public class SectionController {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			} // check if the user exists
 
-			Optional<Section> _sectionData = sectionRepository.findFirstByToken(token); // Find section by token (using
+			Optional<Section> sectionData = sectionRepository.findFirstByToken(token); // Find section by token (using
 																						// optional to avoid exceptions)
+
+			if (!sectionData.isPresent()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			Section section = sectionRepository.getFirstByToken(token); // Find section by token
+
+			Set<User> requests = section.getRequests();
+			requests.add(user);
+			section.setRequests(requests); // Add user to section's requests
+
+			return new ResponseEntity<>(sectionRepository.save(section), HttpStatus.CREATED);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping(value = "/sections/join/action/{type}/section/{sectionId}/user/{userId}")
+	@PreAuthorize("hasRole('MODERATOR')")
+	public ResponseEntity<Section> joinSectionRequestAction(@PathVariable("type") String action,
+			@PathVariable("sectionId") Long sectionId, @PathVariable("userId") Long userId) {
+		try {
+			Long teacherId = jwtUtils.getUserIdFromJWT(); // Get current teacher ID to retrieve his sections
+
+			if (teacherId == null) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+
+			if (teacherId == userId) {
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			}
+
+			// Using Optional to avoid exceptions
+			Optional<Section> _sectionData = sectionRepository.findByIdAndTeacher_Id(sectionId, teacherId);
 
 			if (!_sectionData.isPresent()) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
-			Section sectionData = sectionRepository.getFirstByToken(token); // Find section by token
+			Optional<User> studentData = userRepository.findById(userId); // Using Optional to avoid exceptions
 
-			Set<User> requests = sectionData.getRequests();
-			requests.add(user);
-			sectionData.setRequests(requests); // Add user to section's requests
+			if (!studentData.isPresent()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
 
-			return new ResponseEntity<>(sectionRepository.save(sectionData), HttpStatus.CREATED);
+			User student = userRepository.getById(userId); // Get student
+
+			Section section = sectionRepository.getByIdAndTeacher_Id(sectionId, teacherId); // Get section
+
+			switch (action) {
+			case "approve":
+				Set<User> students = section.getStudents();
+				students.add(student);
+				section.setStudents(students); // Add user to section
+				break;
+			case "reject":
+
+				break;
+
+			default:
+				new RuntimeException("Invalid action parameter");
+
+				break;
+			}
+
+			Set<User> requests = section.getRequests();
+			requests.removeIf(user -> user.getId() == userId);
+			section.setRequests(requests); // Remove user from requests
+
+			return new ResponseEntity<>(sectionRepository.save(section), HttpStatus.CREATED);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

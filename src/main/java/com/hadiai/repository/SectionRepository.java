@@ -19,4 +19,6 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
 	Optional<Section> findByIdAndTeacher_Id(Long id, Long userId);
 
+	Section getByIdAndTeacher_Id(Long id, Long userId);
+
 }
