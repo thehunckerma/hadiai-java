@@ -180,12 +180,12 @@ public class SectionController {
 			Section section = sectionRepository.getFirstByToken(token); // Find section by token
 
 			Set<User> students = section.getStudents();
-			if(students.contains(user)){ // Check if user is already in the section
+			if (students.contains(user)) { // Check if user is already in the section
 				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 			}
 
 			Set<User> requests = section.getRequests();
-			if(requests.contains(user)){ // Check if user has already sent a request
+			if (requests.contains(user)) { // Check if user has already sent a request
 				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 			}
 
@@ -260,7 +260,8 @@ public class SectionController {
 
 	@GetMapping(value = "/sections/{id}/user/{userId}/remove")
 	@PreAuthorize("hasRole('MODERATOR')")
-	public ResponseEntity<Section> removeUserFromSection(@PathVariable("id") Long sectionId, @PathVariable("userId") Long userId) {
+	public ResponseEntity<Section> removeUserFromSection(@PathVariable("id") Long sectionId,
+			@PathVariable("userId") Long userId) {
 		try {
 			Long teacherId = jwtUtils.getUserIdFromJWT(); // Get current teacher ID to retrieve his section
 
@@ -269,14 +270,14 @@ public class SectionController {
 			} // check if the user exists
 
 			// Find section by teacher id and section id
-			Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(sectionId, teacherId); 
+			Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(sectionId, teacherId);
 
 			if (!sectionData.isPresent()) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
 			// Get section by teacher id and section id
-			Section section = sectionRepository.getByIdAndTeacher_Id(sectionId, teacherId); 
+			Section section = sectionRepository.getByIdAndTeacher_Id(sectionId, teacherId);
 
 			Optional<User> studentData = userRepository.findById(userId);
 
@@ -287,7 +288,43 @@ public class SectionController {
 			User student = userRepository.getById(userId);
 
 			Set<User> students = section.getStudents();
-			if(!students.contains(student)){ // Check if user is in the section
+			if (!students.contains(student)) { // Check if user is in the section
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			}
+
+			// Else remove user from section
+			students.removeIf(user -> user.getId() == student.getId());
+			section.setStudents(students);
+
+			return new ResponseEntity<>(sectionRepository.save(section), HttpStatus.CREATED);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping(value = "/sections/{id}/quit")
+	@PreAuthorize("hasRole('USER')")
+	public ResponseEntity<Section> quitSection(@PathVariable("id") Long sectionId) {
+		try {
+			User student = jwtUtils.getUserFromJWT(); // Get current user (student)
+
+			if (student == null) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			} // check if the user exists
+
+			// Find section by section id
+			Optional<Section> sectionData = sectionRepository.findById(sectionId);
+
+			if (!sectionData.isPresent()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			// Get section by section id
+			Section section = sectionRepository.getById(sectionId);
+
+			Set<User> students = section.getStudents();
+			if (!students.contains(student)) { // Check if user is in the section
 				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 			}
 

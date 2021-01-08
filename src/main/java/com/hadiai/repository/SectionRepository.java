@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SectionRepository extends JpaRepository<Section, Long> {
+
+	Optional<Section> findById(Long id);
+
+	Section getById(Long id);
+
 	Section getFirstByToken(String token);
 
 	Optional<Section> findFirstByToken(String token);
