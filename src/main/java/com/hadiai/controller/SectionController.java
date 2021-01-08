@@ -160,7 +160,7 @@ public class SectionController {
 		}
 	}
 
-	@GetMapping(value = "/sections/join/token/{token}")
+	@GetMapping(value = "/sections/token/{token}/join")
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<Section> joinSection(@PathVariable("token") String token) {
 		try {
@@ -179,9 +179,18 @@ public class SectionController {
 
 			Section section = sectionRepository.getFirstByToken(token); // Find section by token
 
+			Set<User> students = section.getStudents();
+			if(students.contains(user)){ // Check if user is already in the section
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			}
+
 			Set<User> requests = section.getRequests();
-			requests.add(user);
-			section.setRequests(requests); // Add user to section's requests
+			if(requests.contains(user)){ // Check if user has already sent a request
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			}
+
+			requests.add(user); // Else add user to section's requests
+			section.setRequests(requests);
 
 			return new ResponseEntity<>(sectionRepository.save(section), HttpStatus.CREATED);
 		} catch (Exception e) {
@@ -190,10 +199,10 @@ public class SectionController {
 		}
 	}
 
-	@GetMapping(value = "/sections/join/action/{type}/section/{sectionId}/user/{userId}")
+	@GetMapping(value = "/sections/{id}/join/{type}/user/{userId}")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> joinSectionRequestAction(@PathVariable("type") String action,
-			@PathVariable("sectionId") Long sectionId, @PathVariable("userId") Long userId) {
+			@PathVariable("id") Long sectionId, @PathVariable("userId") Long userId) {
 		try {
 			Long teacherId = jwtUtils.getUserIdFromJWT(); // Get current teacher ID to retrieve his sections
 
@@ -241,6 +250,50 @@ public class SectionController {
 			Set<User> requests = section.getRequests();
 			requests.removeIf(user -> user.getId() == userId);
 			section.setRequests(requests); // Remove user from requests
+
+			return new ResponseEntity<>(sectionRepository.save(section), HttpStatus.CREATED);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping(value = "/sections/{id}/user/{userId}/remove")
+	@PreAuthorize("hasRole('MODERATOR')")
+	public ResponseEntity<Section> removeUserFromSection(@PathVariable("id") Long sectionId, @PathVariable("userId") Long userId) {
+		try {
+			Long teacherId = jwtUtils.getUserIdFromJWT(); // Get current teacher ID to retrieve his section
+
+			if (teacherId == null) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			} // check if the user exists
+
+			// Find section by teacher id and section id
+			Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(sectionId, teacherId); 
+
+			if (!sectionData.isPresent()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			// Get section by teacher id and section id
+			Section section = sectionRepository.getByIdAndTeacher_Id(sectionId, teacherId); 
+
+			Optional<User> studentData = userRepository.findById(userId);
+
+			if (!studentData.isPresent()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			User student = userRepository.getById(userId);
+
+			Set<User> students = section.getStudents();
+			if(!students.contains(student)){ // Check if user is in the section
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			}
+
+			// Else remove user from section
+			students.removeIf(user -> user.getId() == student.getId());
+			section.setStudents(students);
 
 			return new ResponseEntity<>(sectionRepository.save(section), HttpStatus.CREATED);
 		} catch (Exception e) {
