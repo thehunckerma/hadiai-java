@@ -338,4 +338,22 @@ public class SectionController {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@GetMapping(value = "/sections/user")
+	@PreAuthorize("hasRole('USER')")
+	public ResponseEntity<Set<Section>> getStudentSections() {
+		try {
+			User student = jwtUtils.getUserFromJWT(); // Get current user (student)
+
+			if (student == null) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			} // check if the user exists
+			Set<Section> sections = student.getStudentSections();
+
+			return new ResponseEntity<>(sections, HttpStatus.CREATED);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }
