@@ -36,6 +36,7 @@ public class SectionController {
 
 	@Autowired
 	SectionRepository sectionRepository;
+
 	@Autowired
 	UserRepository userRepository;
 
@@ -79,7 +80,7 @@ public class SectionController {
 	@GetMapping("/sections/{id}")
 	@PreAuthorize("hasRole('MODERATOR')")
 	public ResponseEntity<Section> getSectionById(@PathVariable("id") long id) {
-		Long userId = jwtUtils.getUserIdFromJWT(); // Get current teacher ID to retrieve his sections
+		Long userId = jwtUtils.getUserIdFromJWT(); // Get current teacher Id
 
 		if (userId == null) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);

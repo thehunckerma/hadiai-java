@@ -2,8 +2,18 @@
 package com.hadiai.model;
 
 import com.fasterxml.jackson.annotation.*;
+import com.hadiai.auditing.CommonProps;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -13,12 +23,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "sections", uniqueConstraints = { @UniqueConstraint(columnNames = "token") })
-public class Section {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
+public class Section extends CommonProps {
 	@NotBlank
 	@Size(max = 50)
 	private String name;
@@ -41,9 +46,13 @@ public class Section {
 	private Set<User> requests = new HashSet<>();
 
 	@ManyToOne
-	// @JsonManagedReference
+	@JsonBackReference
 	@JoinColumn(name = "teacher_id", nullable = false)
 	private User teacher;
+
+	@OneToMany(mappedBy = "section")
+	@JsonManagedReference // Prevent circular response
+	private Set<Session> sessions = new HashSet<>();
 
 	public Section() {
 	}
@@ -53,14 +62,6 @@ public class Section {
 		this.description = description;
 		this.token = generateToken();
 		this.teacher = teacher;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getName() {
@@ -111,7 +112,7 @@ public class Section {
 		this.requests = requests;
 	}
 
-	private String generateToken() {
+	private String generateToken() { // Helper function
 		Random rand = new Random();
 		char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 		String token = String.valueOf(rand.nextInt(10));

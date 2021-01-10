@@ -32,3 +32,7 @@ Import the insomnia collection, and start with the signup
 then login to get the jwt and use it to send requests to protected routes
 
 Use `mvn spotless:check` to check if any files need formatting, and `mvn spotless:apply` to format all files.
+
+ManyToOne => JsonBackReference
+OneToMany => JsonManagedReference
+ManyToMany => JsonIdentityInfo

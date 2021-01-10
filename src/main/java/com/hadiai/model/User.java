@@ -2,8 +2,17 @@
 package com.hadiai.model;
 
 import com.fasterxml.jackson.annotation.*;
+import com.hadiai.auditing.CommonProps;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -15,10 +24,7 @@ import java.util.Set;
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username"),
 		@UniqueConstraint(columnNames = "email") })
 @JsonIgnoreProperties(value = { "password" })
-public class User {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class User extends CommonProps {
 
 	@NotBlank
 	@Size(max = 20)
@@ -38,15 +44,16 @@ public class User {
 	private Set<Role> roles = new HashSet<>();
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "students")
-	@JsonBackReference // Prevent circular response
+	// @JsonBackReference // Prevent circular response (Don't enable this otherwise
+	// json responses will break)
 	private Set<Section> studentSections = new HashSet<>(); // student's sections
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "requests")
-	@JsonBackReference // Prevent circular response
+	// @JsonBackReference // Prevent circular response
 	private Set<Section> requests = new HashSet<>(); // student's sections with pending join request
 
 	@OneToMany(mappedBy = "teacher")
-	@JsonBackReference // Prevent circular response
+	@JsonManagedReference // Prevent circular response
 	private Set<Section> teacherSections = new HashSet<>(); // student's sections
 
 	public User() {
@@ -56,14 +63,6 @@ public class User {
 		this.username = username;
 		this.email = email;
 		this.password = password;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getUsername() {
