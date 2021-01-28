@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.validation.Valid;
 
@@ -68,6 +70,19 @@ public class AuthController {
 
 		return ResponseEntity.ok(
 				new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
+	}
+
+	@GetMapping("/signup/validate")
+	public ResponseEntity<?> validate(@RequestParam(required = true) String username,@RequestParam(required = true) String email) {
+		if (userRepository.existsByUsername(username)) {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
+		}
+
+		if (userRepository.existsByEmail(email)) {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+		}
+
+		return ResponseEntity.ok(true);
 	}
 
 	@PostMapping("/signup/{role}")
