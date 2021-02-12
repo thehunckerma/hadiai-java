@@ -31,6 +31,9 @@ public class User extends CommonProps {
 	private String username;
 
 	@NotBlank
+	private String image;
+
+	@NotBlank
 	@Size(max = 50)
 	@Email
 	private String email;
@@ -59,8 +62,9 @@ public class User extends CommonProps {
 	public User() {
 	}
 
-	public User(String username, String email, String password) {
+	public User(String username, String image, String email, String password) {
 		this.username = username;
+		this.image = image;
 		this.email = email;
 		this.password = password;
 	}
@@ -71,6 +75,14 @@ public class User extends CommonProps {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}	
+	
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
 	}
 
 	public String getEmail() {

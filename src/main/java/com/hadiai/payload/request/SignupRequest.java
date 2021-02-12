@@ -15,6 +15,9 @@ public class SignupRequest {
 	@Email
 	private String email;
 
+	@NotBlank
+	private String image;
+
 	private Set<String> role;
 
 	@NotBlank
@@ -31,6 +34,14 @@ public class SignupRequest {
 
 	public String getEmail() {
 		return email;
+	}	
+	
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+	public String getImage() {
+		return image;
 	}
 
 	public void setEmail(String email) {
