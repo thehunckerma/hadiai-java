@@ -34,8 +34,8 @@ public class SignupRequest {
 
 	public String getEmail() {
 		return email;
-	}	
-	
+	}
+
 	public void setImage(String image) {
 		this.image = image;
 	}

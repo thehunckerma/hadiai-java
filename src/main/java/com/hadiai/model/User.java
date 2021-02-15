@@ -75,8 +75,8 @@ public class User extends CommonProps {
 
 	public void setUsername(String username) {
 		this.username = username;
-	}	
-	
+	}
+
 	public String getImage() {
 		return image;
 	}
