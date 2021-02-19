@@ -5,14 +5,16 @@ import com.hadiai.model.User;
 import com.hadiai.repository.UserRepository;
 import com.hadiai.security.jwt.JwtUtils;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +23,7 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/account")
 public class UserController {
 
 	@Autowired
@@ -30,12 +32,18 @@ public class UserController {
 	@Autowired
 	JwtUtils jwtUtils;
 
-	// private static final Logger logger =
-	// LoggerFactory.getLogger(UserController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-	@GetMapping("/users/{id}")
-	public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
-		Optional<User> userData = userRepository.findById(id);
+	@GetMapping("")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR')")
+	public ResponseEntity<User> getUserById() {
+		Long userId = jwtUtils.getUserIdFromJWT(); // Get current user ID to retrieve his data
+
+		if (userId == null) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+
+		Optional<User> userData = userRepository.findById(userId);
 
 		if (userData.isPresent()) {
 			return new ResponseEntity<>(userData.get(), HttpStatus.OK);
@@ -44,25 +52,41 @@ public class UserController {
 		}
 	}
 
-	@PutMapping("/update/{id}")
+	@PostMapping("/update")
 	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR')")
-	public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
+	public ResponseEntity<User> updateUser(@RequestBody User user) {
 
-		// Long userId = jwtUtils.getUserIdFromJWT(); // Get current teacher ID to
-		// retrieve his data
+		Long userId = jwtUtils.getUserIdFromJWT(); // Get current user ID to retrieve his data
 
-		// if (userId == null) {
-		// return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		// }
+		if (userId == null) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 
-		Optional<User> userData = userRepository.findById(id);
+		Optional<User> userData = userRepository.findById(userId);
 
 		if (userData.isPresent()) {
-			User _user = userRepository.getById(id);
-			_user.setUsername(user.getUsername());
-			_user.setEmail(user.getEmail());
-			_user.setImage(user.getImage());
-			_user.setPassword(user.getPassword());
+			User _user = userRepository.getById(userId);
+
+			String username = user.getUsername();
+			if (!StringUtils.isEmpty(username)) {
+				_user.setUsername(username);
+			}
+
+			String email = user.getEmail();
+			if (!StringUtils.isEmpty(email)) {
+				_user.setEmail(email);
+			}
+
+			String password = user.getPassword();
+			if (!StringUtils.isEmpty(password)) {
+				_user.setPassword(password);
+			}
+
+			String image = user.getImage();
+			if (!StringUtils.isEmpty(image)) {
+				_user.setImage(image);
+			}
+
 			return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);

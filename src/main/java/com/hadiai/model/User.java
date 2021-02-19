@@ -23,7 +23,6 @@ import java.util.Set;
 @Entity
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "username"),
 		@UniqueConstraint(columnNames = "email") })
-@JsonIgnoreProperties(value = { "password" })
 public class User extends CommonProps {
 
 	@NotBlank

@@ -116,6 +116,11 @@
 			<version>5.10.0.202012080955-r</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.11</version>
+		</dependency>
 	</dependencies>
 
 	<build>
