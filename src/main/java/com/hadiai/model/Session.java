@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import java.util.HashSet;
@@ -31,6 +32,10 @@ public class Session extends CommonProps {
 	@JsonBackReference
 	@JoinColumn(name = "section_id", nullable = false)
 	private Section section;
+
+	@OneToMany(mappedBy = "session")
+	@JsonManagedReference // Prevent circular response
+	private Set<Presence> presence = new HashSet<>();
 
 	public Session() {
 	}

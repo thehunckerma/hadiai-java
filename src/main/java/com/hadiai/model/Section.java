@@ -31,6 +31,8 @@ public class Section extends CommonProps {
 	@Size(max = 250)
 	private String description;
 
+	private Boolean sessionOn;
+
 	@NotBlank
 	@Size(max = 20)
 	private String token;
@@ -50,7 +52,7 @@ public class Section extends CommonProps {
 	@JoinColumn(name = "teacher_id", nullable = false)
 	private User teacher;
 
-	@OneToMany(mappedBy = "section")
+	@OneToMany(mappedBy = "section", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	@JsonManagedReference // Prevent circular response
 	private Set<Session> sessions = new HashSet<>();
 
@@ -62,6 +64,7 @@ public class Section extends CommonProps {
 		this.description = description;
 		this.token = generateToken();
 		this.teacher = teacher;
+		this.sessionOn = false;
 	}
 
 	public String getName() {
@@ -78,6 +81,14 @@ public class Section extends CommonProps {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Boolean getSessionOn() {
+		return sessionOn;
+	}
+
+	public void setSessionOn(Boolean sessionOn) {
+		this.sessionOn = sessionOn;
 	}
 
 	public String getToken() {
@@ -110,6 +121,10 @@ public class Section extends CommonProps {
 
 	public void setRequests(Set<User> requests) {
 		this.requests = requests;
+	}
+
+	public Set<Session> getSessions() {
+		return sessions;
 	}
 
 	private String generateToken() { // Helper function

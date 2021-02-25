@@ -121,7 +121,12 @@ public class SessionController {
 
 			Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(id, userId);
 
-			if (!sectionData.isPresent()) { // Verify that the teacher owns the Section
+			if (sectionData.isPresent()) { // Verify that the teacher owns the Section
+				// Update session state
+				Section _section = sectionData.get();
+				_section.setSessionOn(true);
+				sectionRepository.save(_section);
+			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
@@ -157,8 +162,13 @@ public class SessionController {
 
 			Optional<Section> sectionData = sectionRepository.findByIdAndTeacher_Id(sectionId, userId);
 
-			if (!sectionData.isPresent()) { // Verify that the teacher owns the Section
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			if (sectionData.isPresent()) { // Verify that the teacher owns the Section
+				// Update session state
+				Section _section = sectionData.get();
+				_section.setSessionOn(false);
+				sectionRepository.save(_section);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
 			session.setEnd(true);

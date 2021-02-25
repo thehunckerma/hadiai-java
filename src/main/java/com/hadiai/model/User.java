@@ -58,6 +58,10 @@ public class User extends CommonProps {
 	@JsonManagedReference // Prevent circular response
 	private Set<Section> teacherSections = new HashSet<>(); // student's sections
 
+	@OneToMany(mappedBy = "student")
+	@JsonManagedReference // Prevent circular response
+	private Set<Presence> presence = new HashSet<>();
+
 	public User() {
 	}
 
