@@ -127,7 +127,7 @@ public class PresenceController {
 							user.getId());
 
 					if (presenceList.isEmpty()) {
-						return new ResponseEntity<>(0, HttpStatus.OK);
+						
 					} else {
 						Date startDate = session.getCreatedDate();
 						Date endDate = new Date();

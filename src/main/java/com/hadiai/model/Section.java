@@ -123,6 +123,10 @@ public class Section extends CommonProps {
 		this.requests = requests;
 	}
 
+	public void setSessions(Set<Session> sessions) {
+		this.sessions = sessions;
+	}
+	
 	public Set<Session> getSessions() {
 		return sessions;
 	}
